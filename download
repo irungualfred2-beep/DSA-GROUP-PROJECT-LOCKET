@@ -1,0 +1,33 @@
+
+import { GoogleGenAI } from "@google/genai";
+
+export const geminiService = {
+  generateCaption: async (base64Image: string) => {
+    if (!process.env.API_KEY) return "A spontaneous moment!";
+
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const imagePart = {
+        inlineData: {
+          mimeType: 'image/jpeg',
+          data: base64Image.split(',')[1],
+        },
+      };
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: {
+          parts: [
+            imagePart,
+            { text: "Briefly describe this photo for a social media caption in 5 words or less." }
+          ]
+        },
+      });
+
+      return response.text?.trim() || "Captured!";
+    } catch (error) {
+      console.error("Gemini failed:", error);
+      return "Spontaneous capture!";
+    }
+  }
+};
